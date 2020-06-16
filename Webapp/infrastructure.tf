@@ -65,11 +65,11 @@ resource "aws_route_table_association" "RTAssocPriv" {
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = aws_vpc.ivpc.id
   service_name    = var.VPCENDPOINTSERVICE
-  route_table_ids = [aws_route_table.RTableA.id, aws_route_table.RTableB.id]
+  route_table_ids = [aws_route_table.RTablePub.id, aws_route_table.RTablePriv.id]
 }
 
 resource "aws_security_group" "cjkwebgrp" {
-  name   = cjkwebgrp
+  name   = "cjkwebgrp"
   vpc_id = aws_vpc.ivpc.id
   ingress {
     description = "HTTP from VPC"
@@ -96,7 +96,7 @@ resource "aws_security_group" "cjkwebgrp" {
   }
 }
 resource "aws_security_group" "natsecgrp" {
-  name   = natsecgrp
+  name   = "natsecgrp"
   vpc_id = aws_vpc.ivpc.id
   ingress {
     description = "Inbound HTTP from Servers in Private Subnet"
