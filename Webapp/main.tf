@@ -6,17 +6,20 @@ resource "aws_security_group" "sg-elb" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     description = "HTTPS from VPC"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port = 0
     to_port   = 0
     protocol  = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 //load balancer
@@ -47,6 +50,7 @@ resource "aws_lb_listener" "alb-list-https" {
 resource "aws_lb_target_group_attachment" "alb-ec2-attach" {
   target_group_arn = aws_lb_target_group.alb-tg.arn
   target_id        = aws_instance.webapp.id
+  port             = 80
 }
 
 resource "aws_instance" "webapp" {
