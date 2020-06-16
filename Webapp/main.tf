@@ -1,62 +1,62 @@
-resource "aws_security_group" "sg-elb"{
-    name    = sg-elb
-    vpc_id  = aws_vpc.ivpc.id
-    ingress {
-        description = "HTTP from VPC"
-        from_port   = 80
-        to_port= 80
-        protocol= "tcp"
-    }
-    ingress {
-        description = "HTTPS from VPC"
-        from_port   = 443
-        to_port= 443
-        protocol= "tcp"
-    }    
-    egress {
-        from_port = 0
-        to_port = 0
-        protocol = "-1"
-    }      
+resource "aws_security_group" "sg-elb" {
+  name   = sg-elb
+  vpc_id = aws_vpc.ivpc.id
+  ingress {
+    description = "HTTP from VPC"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+  }
+  ingress {
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+  }
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+  }
 }
 //load balancer
-resource "aws_lb" "cjkalb"{
-  name = "cjkalb"
+resource "aws_lb" "cjkalb" {
+  name               = "cjkalb"
   load_balancer_type = application
-  security_groups = aws_security_group.sg-elb.id
+  security_groups    = aws_security_group.sg-elb.id
   subnet_mapping = {
     subnet_id = aws_subnet.ipublicsub.id
   }
 }
-resource "aws_lb_target_group" "alb-tg"{
-  name = "cjkalb-tg"
-  port = "80"
+resource "aws_lb_target_group" "alb-tg" {
+  name     = "cjkalb-tg"
+  port     = "80"
   protocol = "HTTP"
-  vpc_id = aws_vpc.ivpc.id
+  vpc_id   = aws_vpc.ivpc.id
 }
-resource "aws_lb_listener" "alb-list-http"{
+resource "aws_lb_listener" "alb-list-http" {
   load_balancer_arn = aws_lb.cjkalb.arn
-  port = "80"
-  protocol = "HTTP"
+  port              = "80"
+  protocol          = "HTTP"
 }
-resource "aws_lb_listener" "alb-list-https"{
+resource "aws_lb_listener" "alb-list-https" {
   load_balancer_arn = aws_lb.cjkalb.arn
-  port = "443"
-  protocol = "HTTPS"
+  port              = "443"
+  protocol          = "HTTPS"
 }
-resource "aws_lb_target_group_attachment" "alb-ec2-attach"{
+resource "aws_lb_target_group_attachment" "alb-ec2-attach" {
   target_group_arn = aws_lb_target_group.alb-tg.arn
-  target_id = aws_instance.webapp.id
+  target_id        = aws_instance.webapp.id
 }
 
 resource "aws_instance" "webapp" {
-  ami           = lookup(var.AMIS, var.AWS_REGION)
-  instance_type = var.INSTANCE_TYP
-  key_name      = var.KEYPAIR
+  ami                    = lookup(var.AMIS, var.AWS_REGION)
+  instance_type          = var.INSTANCE_TYP
+  key_name               = var.KEYPAIR
   vpc_security_group_ids = [aws_security_group.cjkwebgrp.id]
-  subnet_id = aws_subnet.iprivatesub.id
-  tags          = {
-    Name        = "CJKAPP"
+  subnet_id              = aws_subnet.iprivatesub.id
+  tags = {
+    Name = "CJKAPP"
   }
-  user_data     = file("apache.sh")
+  user_data = file("apache.sh")
 }

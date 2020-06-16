@@ -18,10 +18,10 @@ variable "NATAMIS" {
   }
 }
 
-variable "KEYPAIR"{
+variable "KEYPAIR" {
   default = "my_ec2_keypair"
 }
 
-variable "VPCENDPOINTSERVICE"{
+variable "VPCENDPOINTSERVICE" {
   default = "com.amazonaws.ap-south-1.s3"
 }
