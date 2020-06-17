@@ -1,32 +1,37 @@
 ########### Data Source - Infrastructure ###########
 
 ### VPC Data ###
-data "aws_vpc" "vpc_input"{
-  default = false
+data "aws_vpc" "vpc_input" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "cjk"
+  }
+  depends_on = [aws_vpc.ivpc]
 }
 
 ### Public Subnets ###
-data "aws_subnet_ids" "subnet_ids_pub_input"{
-  vpc_id = data.aws_vpc.vpc_input
-  tags {
-    Name = "Public"
+data "aws_subnet_ids" "subnet_ids_pub_input" {
+  vpc_id     = data.aws_vpc.vpc_input.id
+  tags = {
+    Name = "IPublicSubnet*"
   }
 }
 
 ### Private Subnet ###
-data "aws_subnet" "subnet_id_priv_input"{
-  vpc_id = data.aws_vpc.vpc_input
-  tags {
-    Name = "Private"
+data "aws_subnet" "subnet_id_priv_input" {
+  vpc_id     = data.aws_vpc.vpc_input.id
+  cidr_block = "10.0.3.0/24"
+  tags = {
+    Name = "IPrivateSubnet"
   }
 }
 
 ### Application Security Group ###
-data "aws_security_group" "secgp_cjkapp_input"{
-  vpc_id = data.aws_vpc.vpc_input
+data "aws_security_group" "secgp_cjkapp_input" {
+  vpc_id = data.aws_vpc.vpc_input.id
   filter {
-    name = "name"
-    values = "cjkwebgrp"
+    name   = "group-name"
+    values = ["cjkwebgrp"]
   }
 }
 
@@ -52,9 +57,9 @@ resource "aws_security_group" "sg_elb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -81,21 +86,21 @@ resource "aws_lb_listener" "alb-list-http" {
   port              = "80"
   protocol          = "HTTP"
   default_action {
-    type   = "forward"
+    type             = "forward"
     target_group_arn = aws_lb_target_group.alb-tg.arn
-  }  
+  }
 }
 
 ### ELB Listener ###
-resource "aws_lb_listener" "alb-list-https" {
-  load_balancer_arn = aws_lb.cjkalb.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  default_action {
-    type   = "forward"
-    target_group_arn = aws_lb_target_group.alb-tg.arn
-  }  
-}
+# resource "aws_lb_listener" "alb-list-https" {
+#   load_balancer_arn = aws_lb.cjkalb.arn
+#   port              = "443"
+#   protocol          = "HTTPS"
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.alb-tg.arn
+#   }
+# }
 
 ### ELB Attachment ###
 resource "aws_lb_target_group_attachment" "alb-ec2-attach" {
@@ -109,8 +114,8 @@ resource "aws_instance" "webapp" {
   ami                    = lookup(var.AMIS, var.AWS_REGION)
   instance_type          = var.INSTANCE_TYP
   key_name               = var.KEYPAIR
-  vpc_security_group_ids = data.aws_security_group.secgp_cjkapp_input.id
-  subnet_id              = data.aws_subnet.subnet_ids_priv_input.id
+  vpc_security_group_ids = [data.aws_security_group.secgp_cjkapp_input.id]
+  subnet_id              = data.aws_subnet.subnet_id_priv_input.id
   tags = {
     Name = "CJKAPP"
   }
