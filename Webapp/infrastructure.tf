@@ -18,7 +18,7 @@ resource "aws_subnet" "ipublicsub" {
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.ivpc.id
-  availability_zone       = var.AWS_REGION a
+  availability_zone       = "${var.AWS_REGION}a"
   tags = {
     Name = "IPublicSubnet"
   }
@@ -29,7 +29,7 @@ resource "aws_subnet" "ipublicsub2" {
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.ivpc.id
-  availability_zone       = var.AWS_REGION b
+  availability_zone       = "${var.AWS_REGION}b"
   tags = {
     Name = "IPublicSubnet2"
   }
@@ -76,7 +76,7 @@ resource "aws_route_table_association" "RTAssocPub2" {
 
 ### Route Table Association Private ###
 resource "aws_route_table_association" "RTAssocPriv" {
-  subnet_id      = aws_subnet.ipublicsub.id
+  subnet_id      = aws_subnet.iprivatesub.id
   route_table_id = aws_route_table.RTablePriv.id
 }
 
