@@ -1,3 +1,6 @@
+########### Infrastructure Resources ###########
+
+### VPC ###
 resource "aws_vpc" "ivpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
@@ -5,69 +8,86 @@ resource "aws_vpc" "ivpc" {
   }
 }
 
+### Internet Gateway ###
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.ivpc.id
 }
 
+### Public Subnet1 ###
 resource "aws_subnet" "ipublicsub" {
-  cidr_block              = "10.0.0.0/24"
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.ivpc.id
+  availability_zone       = var.AWS_REGION a
   tags = {
     Name = "IPublicSubnet"
   }
 }
 
+### Public Subnet2 ###
+resource "aws_subnet" "ipublicsub2" {
+  cidr_block              = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+  vpc_id                  = aws_vpc.ivpc.id
+  availability_zone       = var.AWS_REGION b
+  tags = {
+    Name = "IPublicSubnet2"
+  }
+}
+
+### Private Subnet ###
 resource "aws_subnet" "iprivatesub" {
-  cidr_block = "10.0.16.0/20"
+  cidr_block = "10.0.3.0/24"
   vpc_id     = aws_vpc.ivpc.id
   tags = {
     Name = "IPrivateSubnet"
   }
 }
 
+### Route Table Public ###
 resource "aws_route_table" "RTablePub" {
   vpc_id = aws_vpc.ivpc.id
   route {
-    cidr_block = "10.0.0.0/16"
+    cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
   }
-  route {
-    cidr_block = "0.0.0.0/16"
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
 }
 
+### Route Table Private ###
 resource "aws_route_table" "RTablePriv" {
   vpc_id = aws_vpc.ivpc.id
   route {
     cidr_block  = "0.0.0.0/0"
     instance_id = aws_instance.NatInstance.id
   }
-  route {
-    cidr_block  = "10.0.0.0/16"
-    instance_id = aws_instance.NatInstance.id ///check//////
-  }
-
 }
 
+### Route Table Association Public 1 ###
 resource "aws_route_table_association" "RTAssocPub" {
   subnet_id      = aws_subnet.ipublicsub.id
   route_table_id = aws_route_table.RTablePub.id
 }
 
+### Route Table Association Public 2 ###
+resource "aws_route_table_association" "RTAssocPub2" {
+  subnet_id      = aws_subnet.ipublicsub2.id
+  route_table_id = aws_route_table.RTablePub.id
+}
+
+### Route Table Association Private ###
 resource "aws_route_table_association" "RTAssocPriv" {
   subnet_id      = aws_subnet.ipublicsub.id
   route_table_id = aws_route_table.RTablePriv.id
 }
 
+### VPC Endpoint ###
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = aws_vpc.ivpc.id
   service_name    = var.VPCENDPOINTSERVICE
   route_table_ids = [aws_route_table.RTablePub.id, aws_route_table.RTablePriv.id]
 }
 
+### Security Group - Application ###
 resource "aws_security_group" "cjkwebgrp" {
   name   = "cjkwebgrp"
   vpc_id = aws_vpc.ivpc.id
@@ -95,6 +115,8 @@ resource "aws_security_group" "cjkwebgrp" {
     protocol  = "-1"
   }
 }
+
+### Security Group - NAT Instance ###
 resource "aws_security_group" "natsecgrp" {
   name   = "natsecgrp"
   vpc_id = aws_vpc.ivpc.id
@@ -125,6 +147,8 @@ resource "aws_security_group" "natsecgrp" {
     protocol  = "-1"
   }
 }
+
+### NAT Instance ###
 resource "aws_instance" "NatInstance" {
   ami           = lookup(var.NATAMIS, var.AWS_REGION)
   instance_type = var.INSTANCE_TYP
@@ -139,6 +163,7 @@ resource "aws_instance" "NatInstance" {
   }
 }
 
+### EIP ###
 resource "aws_eip" "eip" {
   vpc      = true
   instance = aws_instance.NatInstance.id
