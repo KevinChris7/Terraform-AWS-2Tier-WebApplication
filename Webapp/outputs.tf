@@ -42,7 +42,7 @@ output "elb" {
   description = "ARN of Application Load Balancer"
 }
 
-output "instance_ip" {
-  value       = aws_instance.webapp.public_ip
-  description = "Public IP of CJKAPP Instance"
+output "nat_instance_ip" {
+  value       = aws_instance.NatInstance.public_ip
+  description = "Public IP of NAT Instance"
 }

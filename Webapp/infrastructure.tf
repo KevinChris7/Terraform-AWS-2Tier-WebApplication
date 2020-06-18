@@ -89,25 +89,29 @@ resource "aws_vpc_endpoint" "s3" {
 
 ### Security Group - Application ###
 resource "aws_security_group" "cjkwebgrp" {
-  name   = "cjkwebgrp"
-  vpc_id = aws_vpc.ivpc.id
+  name       = "cjkwebgrp"
+  depends_on = [aws_security_group.natsecgrp]
+  vpc_id     = aws_vpc.ivpc.id
   ingress {
-    description = "HTTP from VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    description     = "HTTP from VPC"
+    security_groups = [aws_security_group.natsecgrp.id]
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
   }
   ingress {
-    description = "HTTPS from VPC"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    description     = "HTTPS from VPC"
+    security_groups = [aws_security_group.natsecgrp.id]
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
   }
   ingress {
-    description = "SSH from VPC"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    description     = "SSH from VPC"
+    security_groups = [aws_security_group.natsecgrp.id]
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
   }
   egress {
     from_port = 0
@@ -140,6 +144,12 @@ resource "aws_security_group" "natsecgrp" {
     to_port     = 22
     cidr_blocks = ["0.0.0.0/0"]
     protocol    = "tcp"
+  }
+  ingress {
+    description = "Ping Access"
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
   }
   egress {
     from_port = 0

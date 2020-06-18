@@ -11,7 +11,7 @@ data "aws_vpc" "vpc_input" {
 
 ### Public Subnets ###
 data "aws_subnet_ids" "subnet_ids_pub_input" {
-  vpc_id     = data.aws_vpc.vpc_input.id
+  vpc_id = data.aws_vpc.vpc_input.id
   tags = {
     Name = "IPublicSubnet*"
   }
@@ -29,6 +29,7 @@ data "aws_subnet" "subnet_id_priv_input" {
 ### Application Security Group ###
 data "aws_security_group" "secgp_cjkapp_input" {
   vpc_id = data.aws_vpc.vpc_input.id
+  depends_on = [aws_security_group.cjkwebgrp]
   filter {
     name   = "group-name"
     values = ["cjkwebgrp"]
@@ -92,6 +93,7 @@ resource "aws_lb_listener" "alb-list-http" {
 }
 
 ### ELB Listener ###
+## SSL Certificate is needed for HTTPS ##
 # resource "aws_lb_listener" "alb-list-https" {
 #   load_balancer_arn = aws_lb.cjkalb.arn
 #   port              = "443"
