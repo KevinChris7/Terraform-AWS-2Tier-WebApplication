@@ -27,8 +27,8 @@ output "privatesubnet" {
 }
 
 output "secgroup" {
-  value       = aws_security_group.cjkwebgrp.id
-  description = "Security Group Id"
+  value       = aws_security_group.cjkdbgrp.id
+  description = "DB Security Group Id"
 }
 
 output "vpcendpt" {
@@ -37,8 +37,13 @@ output "vpcendpt" {
 }
 
 ########### Application Outputs ###########
-output "elb" {
+output "elb_arn" {
   value       = aws_lb.cjkalb.arn
+  description = "ARN of Application Load Balancer"
+}
+
+output "elb_dns" {
+  value       = aws_lb.cjkalb.dns_name
   description = "ARN of Application Load Balancer"
 }
 

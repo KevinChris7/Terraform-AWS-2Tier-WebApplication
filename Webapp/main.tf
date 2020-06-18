@@ -10,10 +10,17 @@ data "aws_vpc" "vpc_input" {
 }
 
 ### Public Subnets ###
-data "aws_subnet_ids" "subnet_ids_pub_input" {
+data "aws_subnet" "subnet_id_pub_input" {
   vpc_id = data.aws_vpc.vpc_input.id
   tags = {
-    Name = "IPublicSubnet*"
+    Name = "IPublicSubnet"
+  }
+}
+
+data "aws_subnet" "subnet_id_pub2_input" {
+  vpc_id = data.aws_vpc.vpc_input.id
+  tags = {
+    Name = "IPublicSubnet2"
   }
 }
 
@@ -27,12 +34,12 @@ data "aws_subnet" "subnet_id_priv_input" {
 }
 
 ### Application Security Group ###
-data "aws_security_group" "secgp_cjkapp_input" {
-  vpc_id = data.aws_vpc.vpc_input.id
+data "aws_security_group" "secgp_cjkdb_input" {
+  vpc_id     = data.aws_vpc.vpc_input.id
   depends_on = [aws_security_group.cjkwebgrp]
   filter {
     name   = "group-name"
-    values = ["cjkwebgrp"]
+    values = ["cjkdbgrp"]
   }
 }
 
@@ -60,7 +67,7 @@ resource "aws_security_group" "sg_elb" {
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"
+    protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -70,7 +77,7 @@ resource "aws_lb" "cjkalb" {
   name               = "cjkalb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_elb.id]
-  subnets            = (data.aws_subnet_ids.subnet_ids_pub_input.ids)
+  subnets            = [data.aws_subnet.subnet_id_pub_input.id, data.aws_subnet.subnet_id_pub2_input.id]
 }
 
 ### ELB Target Group ###
@@ -107,17 +114,57 @@ resource "aws_lb_listener" "alb-list-http" {
 ### ELB Attachment ###
 resource "aws_lb_target_group_attachment" "alb-ec2-attach" {
   target_group_arn = aws_lb_target_group.alb-tg.arn
-  target_id        = aws_instance.webapp.id
+  target_id        = aws_instance.cjkapp.id
   port             = 80
 }
 
 ### EC2 Web Instance ###
-resource "aws_instance" "webapp" {
+resource "aws_instance" "cjkdb" {
   ami                    = lookup(var.AMIS, var.AWS_REGION)
   instance_type          = var.INSTANCE_TYP
   key_name               = var.KEYPAIR
-  vpc_security_group_ids = [data.aws_security_group.secgp_cjkapp_input.id]
+  vpc_security_group_ids = [data.aws_security_group.secgp_cjkdb_input.id]
   subnet_id              = data.aws_subnet.subnet_id_priv_input.id
+  tags = {
+    Name = "CJKDB"
+  }
+  user_data = file("apache.sh")
+}
+
+### Security Group - Web Instance ###
+resource "aws_security_group" "cjkwebgrp" {
+  name   = "cjkwebgrp"
+  vpc_id = data.aws_vpc.vpc_input.id
+  ingress {
+    description = "Inbound for Public Subnet"
+    from_port   = 80
+    to_port     = 80
+    //cidr_blocks = [aws_security_group.sg_elb.id]
+    security_groups = [aws_security_group.sg_elb.id]
+    protocol    = "tcp"
+  }
+  ingress {
+    description = "Inbound for Public Subnet"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["0.0.0.0/0"] //Need to give home network
+    protocol    = "tcp"
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  } 
+}
+
+### EC2 Web Instance ###
+resource "aws_instance" "cjkapp" {
+  ami             = lookup(var.AMIS, var.AWS_REGION)
+  instance_type   = var.INSTANCE_TYP
+  key_name        = var.KEYPAIR
+  security_groups = [aws_security_group.cjkwebgrp.id]
+  subnet_id       = data.aws_subnet.subnet_id_pub2_input.id
   tags = {
     Name = "CJKAPP"
   }

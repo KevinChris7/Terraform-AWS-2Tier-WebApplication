@@ -2,7 +2,8 @@
 
 ### VPC ###
 resource "aws_vpc" "ivpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
   tags = {
     Name = "cjk"
   }
@@ -37,8 +38,9 @@ resource "aws_subnet" "ipublicsub2" {
 
 ### Private Subnet ###
 resource "aws_subnet" "iprivatesub" {
-  cidr_block = "10.0.3.0/24"
-  vpc_id     = aws_vpc.ivpc.id
+  cidr_block        = "10.0.3.0/24"
+  vpc_id            = aws_vpc.ivpc.id
+  availability_zone = "${var.AWS_REGION}b"
   tags = {
     Name = "IPrivateSubnet"
   }
@@ -88,35 +90,46 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 ### Security Group - Application ###
-resource "aws_security_group" "cjkwebgrp" {
-  name       = "cjkwebgrp"
+resource "aws_security_group" "cjkdbgrp" {
+  name       = "cjkdbgrp"
   depends_on = [aws_security_group.natsecgrp]
   vpc_id     = aws_vpc.ivpc.id
   ingress {
-    description     = "HTTP from VPC"
-    security_groups = [aws_security_group.natsecgrp.id]
-    from_port       = 80
-    to_port         = 80
+    description     = "Inbound MYSQL Server acess from VPC"
+    cidr_blocks     = [aws_vpc.ivpc.cidr_block]
+    //security_groups = [aws_security_group.natsecgrp.id]
+    from_port       = 3306
+    to_port         = 3306
     protocol        = "tcp"
   }
-  ingress {
-    description     = "HTTPS from VPC"
-    security_groups = [aws_security_group.natsecgrp.id]
-    from_port       = 443
-    to_port         = 443
+    ingress {
+    description     = "Inbound Microsoft SQL Server acess from VPC"
+    cidr_blocks     = [aws_vpc.ivpc.cidr_block]
+    //security_groups = [aws_security_group.natsecgrp.id]
+    from_port       = 1433
+    to_port         = 1433
     protocol        = "tcp"
   }
+  # ingress {
+  #   description     = "HTTPS from VPC"
+  #   security_groups = [aws_security_group.natsecgrp.id]
+  #   from_port       = 443
+  #   to_port         = 443
+  #   protocol        = "tcp"
+  # }
   ingress {
-    description     = "SSH from VPC"
-    security_groups = [aws_security_group.natsecgrp.id]
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
+    description = "SSH from VPC"
+    cidr_blocks = [aws_vpc.ivpc.cidr_block,"0.0.0.0/0"]
+    //security_groups = [aws_security_group.natsecgrp.id]
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
   }
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -128,21 +141,21 @@ resource "aws_security_group" "natsecgrp" {
     description = "Inbound HTTP from Servers in Private Subnet"
     from_port   = 80
     to_port     = 80
-    cidr_blocks = [aws_vpc.ivpc.cidr_block]
+    cidr_blocks = [aws_subnet.iprivatesub.cidr_block]
     protocol    = "tcp"
   }
   ingress {
     description = "Inbound HTTPS from Servers in Private Subnet"
     from_port   = 443
     to_port     = 443
-    cidr_blocks = [aws_vpc.ivpc.cidr_block]
+    cidr_blocks = [aws_subnet.iprivatesub.cidr_block]
     protocol    = "tcp"
   }
   ingress {
     description = "Inbound SSH from network over IGW"
     from_port   = 22
     to_port     = 22
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] //need to give home network
     protocol    = "tcp"
   }
   ingress {
@@ -152,9 +165,10 @@ resource "aws_security_group" "natsecgrp" {
     protocol    = "icmp"
   }
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
