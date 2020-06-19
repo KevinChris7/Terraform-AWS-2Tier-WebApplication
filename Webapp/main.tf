@@ -141,7 +141,7 @@ resource "aws_security_group" "cjkwebgrp" {
     to_port     = 80
     //cidr_blocks = [aws_security_group.sg_elb.id]
     security_groups = [aws_security_group.sg_elb.id]
-    protocol    = "tcp"
+    protocol        = "tcp"
   }
   ingress {
     description = "Inbound for Public Subnet"
@@ -155,7 +155,7 @@ resource "aws_security_group" "cjkwebgrp" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  } 
+  }
 }
 
 ### EC2 Web Instance ###

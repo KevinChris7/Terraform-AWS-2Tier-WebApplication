@@ -51,3 +51,9 @@ output "nat_instance_ip" {
   value       = aws_instance.NatInstance.public_ip
   description = "Public IP of NAT Instance"
 }
+
+########### Monitoring Outputs ###########
+output "cjk_sns_topic_arn" {
+  value       = aws_sns_topic.cjk-notifier.arn
+  description = "ARN of SNS CJK Topic"
+}

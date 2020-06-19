@@ -30,3 +30,7 @@ variable "NATAMIS" {
 variable "VPCENDPOINTSERVICE" {
   default = "com.amazonaws.ap-south-1.s3"
 }
+
+variable "alarms_email" {
+  default = "kevinchristopherkc7@gmail.com"
+}

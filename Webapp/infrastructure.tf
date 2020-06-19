@@ -95,20 +95,20 @@ resource "aws_security_group" "cjkdbgrp" {
   depends_on = [aws_security_group.natsecgrp]
   vpc_id     = aws_vpc.ivpc.id
   ingress {
-    description     = "Inbound MYSQL Server acess from VPC"
-    cidr_blocks     = [aws_vpc.ivpc.cidr_block]
+    description = "Inbound MYSQL Server acess from VPC"
+    cidr_blocks = [aws_vpc.ivpc.cidr_block]
     //security_groups = [aws_security_group.natsecgrp.id]
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
+    from_port = 3306
+    to_port   = 3306
+    protocol  = "tcp"
   }
-    ingress {
-    description     = "Inbound Microsoft SQL Server acess from VPC"
-    cidr_blocks     = [aws_vpc.ivpc.cidr_block]
+  ingress {
+    description = "Inbound Microsoft SQL Server acess from VPC"
+    cidr_blocks = [aws_vpc.ivpc.cidr_block]
     //security_groups = [aws_security_group.natsecgrp.id]
-    from_port       = 1433
-    to_port         = 1433
-    protocol        = "tcp"
+    from_port = 1433
+    to_port   = 1433
+    protocol  = "tcp"
   }
   # ingress {
   #   description     = "HTTPS from VPC"
@@ -119,7 +119,7 @@ resource "aws_security_group" "cjkdbgrp" {
   # }
   ingress {
     description = "SSH from VPC"
-    cidr_blocks = [aws_vpc.ivpc.cidr_block,"0.0.0.0/0"]
+    cidr_blocks = [aws_vpc.ivpc.cidr_block, "0.0.0.0/0"]
     //security_groups = [aws_security_group.natsecgrp.id]
     from_port = 22
     to_port   = 22
