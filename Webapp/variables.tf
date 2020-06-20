@@ -3,7 +3,6 @@ variable "AWS_REGION" {
   default = "ap-south-1"
 }
 
-########### Application Variables ###########
 variable "INSTANCE_TYP" {
   default = "t2.micro"
 }
@@ -19,16 +18,10 @@ variable "KEYPAIR" {
   default = "my_ec2_keypair"
 }
 
-########### Infrastructure Variables ###########
-
 variable "NATAMIS" {
   default = {
     ap-south-1 = "ami-0aba92643213491b9"
   }
-}
-
-variable "VPCENDPOINTSERVICE" {
-  default = "com.amazonaws.ap-south-1.s3"
 }
 
 variable "alarms_email" {
