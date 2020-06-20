@@ -20,7 +20,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu" {
   alarm_description   = "This metric monitors ec2 cpu utilization"
   alarm_actions       = [aws_sns_topic.cjk-notifier.arn]
   dimensions = {
-    InstanceId = aws_instance.cjkapp.id
+    //InstanceId = aws_instance.cjkapp.id
+    InstanceId = var.cjkapp
   }
 }
 
@@ -38,7 +39,8 @@ resource "aws_cloudwatch_metric_alarm" "health" {
   alarm_actions       = [aws_sns_topic.cjk-notifier.arn]
 
   dimensions = {
-    InstanceId = aws_instance.cjkapp.id
+    //InstanceId = aws_instance.cjkapp.id
+    InstanceId = var.cjkapp
   }
 }
 
