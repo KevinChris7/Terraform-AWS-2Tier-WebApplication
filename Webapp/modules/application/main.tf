@@ -129,7 +129,7 @@ resource "aws_instance" "cjkdb" {
   tags = {
     Name = "CJKDB"
   }
-  user_data = file("apache.sh")
+  user_data = file("./apache.sh")
 }
 
 ### Security Group - Web Instance ###
@@ -169,5 +169,5 @@ resource "aws_instance" "cjkapp" {
   tags = {
     Name = "CJKAPP"
   }
-  user_data = file("apache.sh")
+  user_data = file("./apache.sh")
 }
