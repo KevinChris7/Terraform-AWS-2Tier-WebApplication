@@ -2,7 +2,7 @@
 
 ### VPC ###
 resource "aws_vpc" "ivpc" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = var.VPC_CIDR
   enable_dns_hostnames = true
   tags = {
     Name = "cjk"
@@ -16,7 +16,7 @@ resource "aws_internet_gateway" "igw" {
 
 ### Public Subnet1 ###
 resource "aws_subnet" "ipublicsub" {
-  cidr_block              = "10.0.1.0/24"
+  cidr_block              = var.PUBLIC_SUBNET_CIDR
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.ivpc.id
   availability_zone       = "${var.AWS_REGION}a"
@@ -27,7 +27,7 @@ resource "aws_subnet" "ipublicsub" {
 
 ### Public Subnet2 ###
 resource "aws_subnet" "ipublicsub2" {
-  cidr_block              = "10.0.2.0/24"
+  cidr_block              = var.PUBLIC_SUBNET2_CIDR
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.ivpc.id
   availability_zone       = "${var.AWS_REGION}b"
@@ -38,7 +38,7 @@ resource "aws_subnet" "ipublicsub2" {
 
 ### Private Subnet ###
 resource "aws_subnet" "iprivatesub" {
-  cidr_block        = "10.0.3.0/24"
+  cidr_block        = var.PRIVATE_SUBNET_CIDR
   vpc_id            = aws_vpc.ivpc.id
   availability_zone = "${var.AWS_REGION}b"
   tags = {

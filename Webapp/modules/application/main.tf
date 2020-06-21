@@ -2,7 +2,7 @@
 
 ### VPC Data ###
 data "aws_vpc" "vpc_input" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block = var.VPC_CIDR
   tags = {
     Name = "cjk"
   }
@@ -28,7 +28,7 @@ data "aws_subnet" "subnet_id_pub2_input" {
 ### Private Subnet ###
 data "aws_subnet" "subnet_id_priv_input" {
   vpc_id     = data.aws_vpc.vpc_input.id
-  cidr_block = "10.0.3.0/24"
+  cidr_block = var.PRIVATE_SUBNET_CIDR
   tags = {
     Name = "IPrivateSubnet"
   }

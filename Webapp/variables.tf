@@ -27,3 +27,23 @@ variable "NATAMIS" {
 variable "alarms_email" {
   default = "kevinchristopherkc7@gmail.com"
 }
+
+variable "bucket_backend" {
+  default = "terraform-state-7777"
+}
+
+variable "VPC_CIDR" {
+  default = "10.0.0.0/16"
+}
+
+variable "PUBLIC_SUBNET_CIDR" {
+  default = "10.0.1.0/24"
+}
+
+variable "PUBLIC_SUBNET2_CIDR" {
+  default = "10.0.2.0/24"
+}
+
+variable "PRIVATE_SUBNET_CIDR" {
+  default = "10.0.3.0/24"
+}
